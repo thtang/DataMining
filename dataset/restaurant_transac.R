@@ -3,11 +3,18 @@ library(dplyr)
 library(zoo)
 library(lubridate)
 library(ggplot2)
-tranc_data <-read.csv("C:/Users/tsunh/Desktop/Schoolwork/DataMining/dataset/iChef data for BAFT 2016 class.csv",
+tranc_data <-read.csv("iChef data for BAFT 2016 class.csv",
                       stringsAsFactors = F) %>% select(-c(X,X.1,X.2,X.3))
 table(tranc_data$restaurant_uuid) # 6d0ebab3-edf8-4e04-a947-1973e76ab11f 這間餐廳最多筆資料
 restaur_id <- unique(tranc_data$restaurant_uuid)
-restaur_6d <- subset(tranc_data,restaurant_uuid==restaur_id[6])
+restaur_6d <- subset(tranc_data,restaurant_uuid==restaur_id[5])
+
+
+saveRDS(restaur_6d,"tran5.rds")
+
+
+
+
 
 #restaur_6d$timestamp[1:10]
 #unix_t <- restaur_6d$unix[1]
@@ -32,6 +39,73 @@ ggplot(data=freq_non_zero , aes(as.factor(time),Freq,fill = as.factor(time))) +
   guides(fill=FALSE)
 
 #time series plot
-CutDatesTable <-subset(MyDatesTable,MyDatesTable$Var1<=as.POSIXct("2016-05-10"))
+CutDatesTable <-subset(MyDatesTable,MyDatesTable$Var1<as.POSIXct("2016-04-09") &
+                         MyDatesTable$Var1 > as.POSIXct("2016-04-02"))
 ggplot(CutDatesTable, aes(as.POSIXct(Var1), Freq)) + geom_line() +
   xlab("") + ylab("Daily Views")
+
+#forecast
+library(forecast)
+library(zoo)
+library(xts)
+x<- zoo(CutDatesTable$Freq,as.POSIXct(CutDatesTable$Var1))
+xts_obj<- xts(CutDatesTable$Freq, order.by = as.POSIXct(CutDatesTable$Var1,format="%y-%m-%d %H:%M:%S"
+                                                        ),frequency = 24)
+attr(xts_obj, 'frequency') <- 24
+
+
+CutDatesTable$Var1
+autoplot(x)
+auto.arima(x)
+library(ggfortify)
+autoplot(forecast(ets(xts_obj),h=24),xaxt = "n")
+x.ts = ts(xts_obj, freq=24*7,start = c(2016,4,2))
+plot(forecast(ets(x.ts), 24))
+c(as.POSIXct(CutDatesTable$Var1) + 12)
+
+
+#association rules 
+
+library(arulesViz)
+require(xlsx)
+library(gdata)
+library(dplyr)
+restaur_oneP <- subset(restaur_6d, people ==1 , dining = "indoor")
+View(restaur_oneP)
+
+transac <- restaur_6d %>% select(invoice_uuid, item_name)
+transac$invoice_uuid <- as.factor(transac$invoice_uuid)
+transac$item_name <- as.factor(transac$item_name)
+#str(transac)
+
+#a <- split(transac$item_name,transac$invoice_uuid)
+
+transac <- as(split(transac$item_name,transac$invoice_uuid),"transactions")
+
+summary(transac) #find most popular item
+
+
+rules <- apriori(transac, parameter=list(support=0.001, confidence=0.1))
+#rules
+sorted_lift=sort(rules,by= 'lift' )
+
+#inspect(sorted_lift)
+subset.matrix=is.subset(sorted_lift,sorted_lift)
+redundant=colSums(subset.matrix) > 1
+which(redundant)
+rulepruned=sorted_lift[!redundant]
+
+#inspect(rulepruned)
+#rulepruned %>% length()
+sortN=head(sort(rulepruned,by ="lift"),10)
+#inspect(head(sort(rulepruned,by ="lift"),30))
+
+plot(head(sort(rulepruned,by ="lift"),100), method='scatterplot')
+
+plot(head(sort(rulepruned,by ="lift"),30), method='graph', control = list(type='items'))
+
+plot(head(sort(rulepruned,by ="lift"),30), method = 'grouped')
+
+
+
+

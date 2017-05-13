@@ -1,9 +1,13 @@
 library(shiny)
 library(ggplot2)
-shinyUI(fluidPage(
+library(shinythemes)
+shinyUI(fluidPage(theme = shinytheme("slate"),
+  titlePanel("Final project"),
+  tabsetPanel(
+    tabPanel("Summary",
   titlePanel("Restaurant data summary"),
   sidebarPanel(
-    radioButtons("radio", label = "Choices", choices = list("6d0ebab3-edf8-4e04-a947-1973e76ab11f" = "res1", 
+    radioButtons("radio", label = "Restaurant choices", choices = list("6d0ebab3-edf8-4e04-a947-1973e76ab11f" = "res1", 
                                                             "535b23c0-728f-4ced-8ad6-c8ecd8ae379d" = "res2",
                                                             "95a94f0c-638d-4f45-9483-353d889e046c" = "res3", 
                                                             "74381003-bd11-4b50-86fc-a27f4ddf1a4e" = "res4",
@@ -14,6 +18,54 @@ shinyUI(fluidPage(
   ),
   
   
-  mainPanel(plotOutput("distPlot"),
-            plotOutput("seriesPlot"))
+  mainPanel(
+    fluidRow(
+      div(dataTableOutput("table"), style = "font-size:100%")
+    ),hr(),
+    fluidRow(
+      plotOutput("distPlot")),hr(),
+    
+    fluidRow(
+      plotOutput("seriesPlot")
+      )
+    )
+    ),
+  
+  tabPanel("Association Ruls",
+           titlePanel("Rules for food combination"),
+           sidebarPanel(
+             radioButtons("radio3", label = "Restaurant choices", choices = list("6d0ebab3-edf8-4e04-a947-1973e76ab11f" = "tran1", 
+                                                                                 "535b23c0-728f-4ced-8ad6-c8ecd8ae379d" = "tran2",
+                                                                                 "95a94f0c-638d-4f45-9483-353d889e046c" = "tran3", 
+                                                                                 "74381003-bd11-4b50-86fc-a27f4ddf1a4e" = "tran4",
+                                                                                 "3bf185da-5b44-46a4-b6ec-343ded8e01e9" = "tran5")
+                          ),
+             textInput("support",label = "support",value = 0.001),
+             sliderInput("confidence","Confidence",min = 0,max =1,value = 0.1),
+             textInput("sortN",label = "prune the number of rules to:",value = 30)
+             
+           ),
+           mainPanel(
+             plotOutput("consupPlot"),hr(),
+             plotOutput("rulesMatrix"),hr(),
+             plotOutput("graph")
+           )
+           ),
+  tabPanel("Forecasting",
+           titlePanel("Customer count forecasting"),
+           sidebarPanel(
+             radioButtons("radio2", label = "Restaurant choices", choices = list("6d0ebab3-edf8-4e04-a947-1973e76ab11f" = "res1", 
+                                                                                 "535b23c0-728f-4ced-8ad6-c8ecd8ae379d" = "res2",
+                                                                                 "95a94f0c-638d-4f45-9483-353d889e046c" = "res3", 
+                                                                                 "74381003-bd11-4b50-86fc-a27f4ddf1a4e" = "res4",
+                                                                                 "3bf185da-5b44-46a4-b6ec-343ded8e01e9" = "res5")),
+             dateRangeInput("training_p", label = h3("Date range for training"),start = "2016-03-29",end = "2016-04-5"),
+             textInput("h",label = "Hours for forecasting",value = 12)
+           ),
+           mainPanel(
+             plotOutput("forecastPlot")
+           ))
+  
+  
+  )
 ))
