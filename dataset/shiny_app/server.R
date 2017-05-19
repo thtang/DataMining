@@ -11,7 +11,8 @@ shinyServer(function(input, output) {
   
   values <- reactive({readRDS(paste0(input$radio,".rds"))})
   values2 <- reactive({readRDS(paste0(input$radio2,".rds"))})
-  output$table <- renderDataTable(values(),options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
+  output$table1 <- renderDataTable(readRDS(paste0(input$radio4,".rds")),options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
+  output$table2 <- renderDataTable(values(),options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
   output$distPlot <- renderPlot({
     #MyDatesTable <- readRDS(paste0(input$radio,".rds"))
     
@@ -42,7 +43,8 @@ shinyServer(function(input, output) {
     attr(xts_obj, 'frequency') <- 24
     #attr(xts_obj, 'start') <- as.POSIXct(input$training_p[1])
     autoplot(forecast(ets(xts_obj,model="ZZZ"),h=as.numeric(input$h)))+
-      theme(plot.title = element_text(size=20,face = "bold"))
+      theme(plot.title = element_text(size=20,face = "bold"))+
+      ylab("Customers flow")
     
     #axis(1, at = as.POSIXct(CutDatesTable2$Var1), labels = as.POSIXct(CutDatesTable2$Var1), cex.axis=0.6)
     
