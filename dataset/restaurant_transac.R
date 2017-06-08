@@ -3,13 +3,14 @@ library(dplyr)
 library(zoo)
 library(lubridate)
 library(ggplot2)
+library(reshape2)
 tranc_data <-read.csv("iChef data for BAFT 2016 class.csv",
                       stringsAsFactors = F) %>% select(-c(X,X.1,X.2,X.3))
 summary(tranc_data)
 
 table(tranc_data$restaurant_uuid) # 6d0ebab3-edf8-4e04-a947-1973e76ab11f 這間餐廳最多筆資料
 restaur_id <- unique(tranc_data$restaurant_uuid)
-restaur_6d <- subset(tranc_data,restaurant_uuid==restaur_id[1])
+restaur_6d <- subset(tranc_data,restaurant_uuid==restaur_id[2])
 
 
 saveRDS(restaur_6d,"tran5.rds")
@@ -24,10 +25,14 @@ saveRDS(restaur_6d,"tran5.rds")
 trans_time <- function(unix_t){
   return(as.character(as.POSIXct(unix_t, origin="1970-01-01",tz = "Asia/Taipei")))
 }
+trans_time2 <- function(unix_t){
+  hourly <-as.POSIXct(unix_t, origin="1970-01-01",tz = "Asia/Taipei") %>% format("%Y-%m-%d %H")
+  return(hourly)
+}
 #先分成24小時，看每小時的來客數
 restaur_6d$timestamp <- sapply(restaur_6d$unix,trans_time)
 
-MyDatesTable <- as.data.frame(table(cut(as.POSIXlt(restaur_6d$timestamp,tz = "Asia/Taipei"), breaks="hour")),
+MyDatesTable <- as.data.frame(table(cut(as.POSIXlt(restaur_6d$timestamp,tz = "Asia/Taipei"), breaks="hour"),item_name),
                               stringsAsFactors = F)
 MyDatesTable$time <- sapply(MyDatesTable$Var1, hour)
 
@@ -68,6 +73,19 @@ summary(ets(xts_obj))
 x.ts = ts(xts_obj, freq=24*7,start = c(2016,4,2))
 plot(forecast(ets(x.ts), 24))
 c(as.POSIXct(CutDatesTable$Var1) + 12)
+
+
+#### forecast base on product ####
+restaur_6d$timehourly <- sapply(restaur_6d$unix,trans_time2)
+restaur_6d %>% View()
+class(restaur_6d$timehourly)
+rest_cast <- as.data.frame(with(restaur_6d,
+                                table(cut(as.POSIXct(timestamp, tz = "Asia/Taipei"),
+                                                                breaks = "hour"),item_name))) %>% dcast(Var1 ~ item_name, value.var = "Freq")
+View(rest_cast)
+write.csv(rest_cast,"productByTime.csv")
+
+
 
 
 #association rules 
