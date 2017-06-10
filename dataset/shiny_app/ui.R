@@ -1,13 +1,13 @@
 library(shiny)
 library(ggplot2)
 library(shinythemes)
-shinyUI(fluidPage(theme = shinytheme("slate"),
-  titlePanel("Final project"),
+shinyUI(fluidPage(theme = shinytheme("united"),
+  titlePanel("Saley-Take care of your stuff "),
   tabsetPanel(
     
     tabPanel("Raw Data",
              br(),
-             column(10,
+             column(12,
                   selectInput("radio4", label = "Restaurant choices", choices = list("6d0ebab3-edf8-4e04-a947-1973e76ab11f" = "tran1", 
                                                                                   "535b23c0-728f-4ced-8ad6-c8ecd8ae379d" = "tran2",
                                                                                   "95a94f0c-638d-4f45-9483-353d889e046c" = "tran3", 
@@ -83,7 +83,11 @@ shinyUI(fluidPage(theme = shinytheme("slate"),
            ),
            mainPanel(
              plotOutput("forecastPlot")
-           ))
+             
+           )),
+  tabPanel("Premium Plans & Features",
+           HTML('<center><img src="pricing-changeplan.png" width=1100 height = 500></center>')
+           )
   
   
   )
