@@ -10,10 +10,10 @@ summary(tranc_data)
 
 table(tranc_data$restaurant_uuid) # 6d0ebab3-edf8-4e04-a947-1973e76ab11f 這間餐廳最多筆資料
 restaur_id <- unique(tranc_data$restaurant_uuid)
-restaur_6d <- subset(tranc_data,restaurant_uuid==restaur_id[1])
+restaur_6d <- subset(tranc_data,restaurant_uuid==restaur_id[2])
 
 
-#saveRDS(restaur_6d,"tran5.rds")
+saveRDS(restaur_6d,"tran5.rds")
 
 
 
@@ -32,14 +32,12 @@ trans_time2 <- function(unix_t){
 #先分成24小時，看每小時的來客數
 restaur_6d$timestamp <- sapply(restaur_6d$unix,trans_time)
 
-#MyDatesTable <- as.data.frame(table(cut(as.POSIXlt(restaur_6d$timestamp,tz = "Asia/Taipei"), breaks="hour"),item_name),
-#                              stringsAsFactors = F)
-MyDatesTable <- as.data.frame(table(cut(as.POSIXlt(restaur_6d$timestamp,tz = "Asia/Taipei"), breaks="hour")),
+MyDatesTable <- as.data.frame(table(cut(as.POSIXlt(restaur_6d$timestamp,tz = "Asia/Taipei"), breaks="hour"),item_name),
                               stringsAsFactors = F)
 MyDatesTable$time <- sapply(MyDatesTable$Var1, hour)
 
 # choose freq non zero
-#saveRDS(MyDatesTable,"res6.rds")
+saveRDS(MyDatesTable,"res6.rds")
 freq_non_zero <- subset(MyDatesTable,MyDatesTable$Freq != 0 & MyDatesTable$time <= as.POSIXct("2017-05-10"))
 
 #boxplot for each hour
@@ -57,8 +55,8 @@ ggplot(CutDatesTable, aes(as.POSIXct(Var1), Freq)) + geom_line() +
 library(forecast)
 library(zoo)
 library(xts)
-x <- zoo(CutDatesTable$Freq,as.POSIXct(CutDatesTable$Var1))
-xts_obj <- xts(CutDatesTable$Freq, order.by = as.POSIXct(CutDatesTable$Var1,format="%y-%m-%d %H:%M:%S"
+x<- zoo(CutDatesTable$Freq,as.POSIXct(CutDatesTable$Var1))
+xts_obj<- xts(CutDatesTable$Freq, order.by = as.POSIXct(CutDatesTable$Var1,format="%y-%m-%d %H:%M:%S"
                                                         ),frequency = 24)
 attr(xts_obj, 'frequency') <- 24
 
@@ -72,13 +70,8 @@ autoplot(forecast(ets(xts_obj),h=24),xaxt = "n")
 summary(auto.arima(xts_obj))
 summary(ets(xts_obj))
 
-fit <- tslm(ts(as.vector(xts_obj),frequency = 24)~ trend + season)
-plot(forecast(fit, h=24))
-summary(fit)
-plot(residuals(fit))
-
 x.ts = ts(xts_obj, freq=24*7,start = c(2016,4,2))
-plot(forecast(ets(xts_obj), 24))
+plot(forecast(ets(x.ts), 24))
 c(as.POSIXct(CutDatesTable$Var1) + 12)
 
 
