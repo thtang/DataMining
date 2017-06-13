@@ -86,7 +86,7 @@ shinyUI(fluidPage(theme = shinytheme("united"),
              
            )),
   tabPanel("Premium Plans & Features",
-           HTML('<center><img src="pricing-changeplan.png" width=1100 height = 500></center>')
+           HTML('<center><a href = "https://www.shinyapps.io/admin/#/account/billing/plan/starter/change" ><img src="pricing-changeplan.png" width=1100 height = 500></center>')
            )
   
   
